@@ -111,17 +111,20 @@ class Usuarios extends CI_Controller
   //METODOS RESFULLL
 
 
-  public function cargarUsuario()
+  public function cargarUsuario($id=null)
   {
 
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+     
       
-      if (isset($_REQUEST['id'])) {
-        $dato = ['usuarios' => $this->UsuariosModel->getById($_GET['id'])];
+      if (isset($id)) {
+        $dato =$this->UsuariosModel->getById($id);
         echo json_encode($dato);
         header("HTTP/1.1 200 OK");
+       
       }else{
-        $data = ['usuarios' => $this->UsuariosModel->getAll()];
+
+        $data = $this->UsuariosModel->getAll();
         header("HTTP/1.1 200 OK");
         echo json_encode($data);
 
@@ -149,14 +152,48 @@ class Usuarios extends CI_Controller
   public function eliminarUsuario($id)
   {
     if ($_SERVER['REQUEST_METHOD'] == "DELETE") {
-      $this->UsuariosModel->delete($id);
-      header("HTTP/1.1 200 OK");
-      echo "BORRADO EXITOSAMENTE";
-      exit();
+      
+      if (isset($id)) {
+        $this->UsuariosModel->delete($id);
+        header("HTTP/1.1 200 OK");
+        echo "BORRADO EXITOSAMENTE";
+        exit();
       }else{
-      header("HTTP/1.1 400 ERROR");
+      header("HTTP/1.1 500 ERROR");
       exit();
-      }}
+      }}else{
+        header("HTTP/1.1 400 ERROR");
+        exit();
+      }
+    }
+
+      public function modificarUsuario()
+      {
+
+    if ($_SERVER['REQUEST_METHOD'] == "PUT") {
+      
+      header('Content-Type: application/json');
+      header('Access-Control-Allow-Methods: PUT');
+      header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Content-Type, Access-Control-Allow-Methods, Authorization,X-Requested-With');
+      header("HTTP/1.1 200 OK");
+      $datos = json_decode(file_get_contents("php://input"), true); 
+      
+      $data = [
+        'nombre' => $datos['nombre'],
+        'apellido' => $datos['apellido'],
+        'id' => $datos['id']];
+
+      var_dump($data);
+
+
+      $this->UsuariosModel->update($data);
+      echo json_encode($datos);
+      echo " REGISTRO ACTUALIZADO EXITOSAMENTE";
+      exit();
+     }else{
+       header("HTTP/1.1 400 ERROR");
+       exit();
+     }}
 
 
 
