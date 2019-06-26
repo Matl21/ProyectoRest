@@ -1,15 +1,19 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
+// require_once('C:/xampp/htdocs/proyectoRest/application/helpers/encabezadoApi.php');
 
 class Usuarios extends CI_Controller
 {
 
+  // $encabezado = new Encabezados();
+  
   public function __construct()
   {
-
+    
     parent::__construct();
     //leer el model
     $this->load->model('UsuariosModel');
+    
   }
 
 
@@ -108,103 +112,124 @@ class Usuarios extends CI_Controller
 
 
 
-  //METODOS RESFULLL
 
 
-  public function cargarUsuario($id=null)
+
+
+
+
+
+
+
+
+  private $correcto=['respuesta' => 'Correctamente Realizado'];
+  private $incorrecto=['Error' => 'Fallo Algun proceso'];
+
+  //-------METODOS PARA API RETFULL GET, POST, PUT, DELETE-------------//
+
+
+  function encabeza($metodo, $param=false){
+    header('Content-Type: application/json');
+    header('Access-Control-Allow-Methods: '.$metodo.'"');
+    header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Content-Type, Access-Control-Allow-Methods, Authorization,X-Requested-With');
+
+    //Si RECIBE PARAMETROS RETORNARA DATOS
+    if ($param) {
+      if ($data = json_decode(file_get_contents("php://input"), true)) {
+        //Obteniendo
+        return $datos = json_decode(file_get_contents("php://input"), true);
+        
+       } else {
+        return $_REQUEST;      
+      }
+    }
+  }
+
+
+
+
+
+  public function cargarUsuario($id = null)
   {
-
+   
+    
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-     
-      
+      $this->encabeza($_SERVER['REQUEST_METHOD']);
       if (isset($id)) {
-        $dato =$this->UsuariosModel->getById($id);
-        echo json_encode($dato);
+        $dato = $this->UsuariosModel->getById($id);
         header("HTTP/1.1 200 OK");
-       
-      }else{
-
+        echo json_encode($this->correcto);
+        //echo json_encode($dato);
+      } else {
         $data = $this->UsuariosModel->getAll();
         header("HTTP/1.1 200 OK");
-        echo json_encode($data);
-
+        echo json_encode($this->correcto);
+        echo json_encode($dato);
       }
-     }
-    
+    }
   }
 
 
   public function ingresarUsuario()
   {
-   
-    if (($_SERVER['REQUEST_METHOD'] == 'POST')&&($_REQUEST!=null) ) {
-       $dato=$_REQUEST;
-       header("HTTP/1.1 200 OK");
-       $this->UsuariosModel->ingresar($dato);
-       echo json_encode($dato);
-       exit();
-      }else{
-        header("HTTP/1.1 400 ERROR");
-        exit();
-      }}
     
+    if (($_SERVER['REQUEST_METHOD'] == 'POST')&&($_SERVER!=null)) {
+      
+      $datos = $this->encabeza($_SERVER['REQUEST_METHOD'], true);
+      $data = ['nombre' => $datos['nombre'], 'apellido' => $datos['apellido']];    
+      
+      $this->UsuariosModel->ingresar($data);
+      header("HTTP/1.1 200 OK");
+      echo json_encode($this->correcto);
+      // echo json_encode($data);
+      exit();
+    } else {
+      header("HTTP/1.1 400 ERROR");
+      echo json_encode($this->incorrecto);
+      exit();
+    }
+  }
 
+
+  
   public function eliminarUsuario($id)
   {
     if ($_SERVER['REQUEST_METHOD'] == "DELETE") {
-      
+      $this->encabeza($_SERVER['REQUEST_METHOD']);
       if (isset($id)) {
         $this->UsuariosModel->delete($id);
         header("HTTP/1.1 200 OK");
-        echo "BORRADO EXITOSAMENTE";
+        echo json_encode($this->correcto);
         exit();
-      }else{
-      header("HTTP/1.1 500 ERROR");
-      exit();
-      }}else{
-        header("HTTP/1.1 400 ERROR");
+      } else {
+        header("HTTP/1.1 500 ERROR");
         exit();
       }
+    } else {
+      header("HTTP/1.1 400 ERROR");
+      exit();
     }
+  }
 
-      public function modificarUsuario()
-      {
+
+
+  public function modificarUsuario()
+  {
 
     if ($_SERVER['REQUEST_METHOD'] == "PUT") {
+      $datos = $this->encabeza($_SERVER['REQUEST_METHOD'], true);
+      $data = ['nombre' => $datos['nombre'], 'apellido' => $datos['apellido'], 'id' => $datos['id']];
       
-      header('Content-Type: application/json');
-      header('Access-Control-Allow-Methods: PUT');
-      header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Content-Type, Access-Control-Allow-Methods, Authorization,X-Requested-With');
-      header("HTTP/1.1 200 OK");
-      $datos = json_decode(file_get_contents("php://input"), true); 
-      
-      $data = [
-        'nombre' => $datos['nombre'],
-        'apellido' => $datos['apellido'],
-        'id' => $datos['id']];
-
-      var_dump($data);
-
-
       $this->UsuariosModel->update($data);
+      header("HTTP/1.1 200 OK");
+      echo "ERROR NO SE ACTUALIZADO";
       echo json_encode($datos);
-      echo " REGISTRO ACTUALIZADO EXITOSAMENTE";
+
       exit();
-     }else{
-       header("HTTP/1.1 400 ERROR");
-       exit();
-     }}
-
-
-
-
-
-
-
-
-
-
-
-
-
+    } else {
+      header("HTTP/1.1 400 ERROR");
+      echo "ERROR NO SE ACTUALIZADO";
+      exit();
+    }
+  }
 }

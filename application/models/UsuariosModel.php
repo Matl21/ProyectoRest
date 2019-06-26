@@ -24,7 +24,17 @@ class UsuariosModel extends CI_Model{
 
     //METODO PARA ELIMINAR
     public function delete($id){
-    $this->db->query("DELETE FROM usuarios WHERE id=$id");
+    try {
+        if($this->db->query("DELETE FROM usuarios WHERE id=$id")){
+            return true;
+           }else{
+               return false;
+           
+        }
+    } catch (SQLException $e) {
+        echo $e;
+    }
+    
 
     }
 
@@ -49,7 +59,11 @@ public function update($data){
     //haciendo sentencia en CODEIGNITER
        $sql="UPDATE USUARIOS SET nombre=?, apellido=? WHERE id=?";
    //MANDA LA CONSULTA Y LOS DATO A UN METODO YA CREADO OR CODE IGNATE
-       $this->db->query($sql, $data);
+       if($this->db->query($sql, $data)){
+           return true;
+       }else{
+           return false;
+       }
    }
 
 
@@ -61,6 +75,6 @@ public function update($data){
 
 
 
-}
 
-?>
+
+}
